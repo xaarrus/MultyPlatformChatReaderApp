@@ -1,0 +1,37 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net6.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Data\img\app-anonavatar.png" />
+    <None Remove="Data\img\ggi.png" />
+    <None Remove="Data\img\sysi.png" />
+    <None Remove="Data\img\twi.png" />
+    <None Remove="Data\img\yti.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Data\img\app-anonavatar.png" />
+    <Resource Include="Data\img\ggi.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Google.Apis.YouTube.v3" Version="1.55.0.2449" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="TwitchLib.Api" Version="3.3.0" />
+    <PackageReference Include="TwitchLib.Client" Version="3.2.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Data\img\sysi.png" />
+    <Resource Include="Data\img\twi.png" />
+    <Resource Include="Data\img\yti.png" />
+  </ItemGroup>
+
+</Project>

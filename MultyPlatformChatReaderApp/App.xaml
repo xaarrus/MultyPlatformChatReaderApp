@@ -1,0 +1,43 @@
+﻿<Application x:Class="MultyPlatformChatReaderApp.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:MultyPlatformChatReaderApp"
+             xmlns:locator="clr-namespace:MultyPlatformChatReaderApp.Locators"
+             xmlns:views="clr-namespace:MultyPlatformChatReaderApp.Views"
+             xmlns:viewmodels="clr-namespace:MultyPlatformChatReaderApp.ViewModels"
+             StartupUri="MainWindow.xaml">
+    <Application.Resources>
+        
+        <ResourceDictionary>
+            
+        <DataTemplate DataType="{x:Type viewmodels:GGLoginViewModel}">
+            <views:GGLoginView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type viewmodels:LoginViewModel}">
+            <views:LoginView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type viewmodels:YTIntroViewModel}">
+            <views:YTIntroView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type viewmodels:TWIntroViewModel}">
+            <views:TWIntroView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type viewmodels:GGIntroViewModel}">
+            <views:GGIntroView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type viewmodels:IntroViewModel}">
+            <views:IntroView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type viewmodels:ChatsViewModel}">
+            <views:ChatsView/>
+        </DataTemplate>
+            
+        <locator:MainLocator x:Key="MainLocator" />
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="ResourceDictionaries/StyleResourceDictionary.xaml" />
+                <ResourceDictionary Source="ResourceDictionaries/DataTemplateResourceDictionary.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+        
+    </Application.Resources>
+</Application>

@@ -1,0 +1,22 @@
+﻿<Window x:Class="MultyPlatformChatReaderApp.Views.GGLoginWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:MultyPlatformChatReaderApp.Views"
+        mc:Ignorable="d"
+        DataContext="{Binding GGLoginViewModel, Source={StaticResource MainLocator}}"
+        Title="Вход в GG" Height="235" Width="250">
+    <Grid Background="#233056" Height="200" Width="250">
+        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+            <Label Foreground="White" HorizontalAlignment="Center">Имя пользователя / Login</Label>
+            <TextBox Width="250" Height="20" Text="{Binding Login, UpdateSourceTrigger=PropertyChanged}"></TextBox>
+            <Label Foreground="White" HorizontalAlignment="Center">Пароль / Password</Label>
+            <TextBox Width="250" Height="20" Text="{Binding Password, UpdateSourceTrigger=PropertyChanged}"></TextBox>
+            <Button Style="{StaticResource GoodGameButton}" Margin="0 10 0 0" Command="{Binding LoginGG}">
+                <TextBlock TextWrapping="Wrap" HorizontalAlignment="Center" Text="Войти LogIn"></TextBlock>
+            </Button>
+            <Label Content="{Binding ResponseError, UpdateSourceTrigger=PropertyChanged}"></Label>
+        </StackPanel>
+    </Grid>
+</Window>

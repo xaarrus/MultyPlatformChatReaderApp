@@ -1,0 +1,26 @@
+﻿<Window x:Class="MultyPlatformChatReaderApp.Views.ChatsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:MultyPlatformChatReaderApp.Views"
+        mc:Ignorable="d"
+        DataContext="{Binding ChatsViewModel, Source={StaticResource MainLocator}}"
+        Title="Chach" Height="450" Width="400">
+    <Grid>        
+        <ListBox Grid.Column="0" ScrollViewer.VerticalScrollBarVisibility="Hidden"
+                 ScrollViewer.CanContentScroll="False"                  
+                 Focusable="False" 
+                 ScrollViewer.HorizontalScrollBarVisibility="Hidden"
+                 HorizontalAlignment="Stretch"
+                 HorizontalContentAlignment="Stretch"
+                 ItemsSource="{Binding Chat}"
+                 ItemTemplate="{StaticResource myMessageTemplate}"
+                 MinHeight="300"
+                 MinWidth="150"
+                 Background="#2d2d30"
+                 x:Name="ListMessages"                 
+                 >
+        </ListBox>
+    </Grid>
+</Window>

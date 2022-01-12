@@ -1,0 +1,26 @@
+﻿<Window x:Class="MultyPlatformChatReaderApp.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:MultyPlatformChatReaderApp"
+        mc:Ignorable="d"
+        DataContext="{Binding MainViewModel, Source={StaticResource MainLocator}}"
+        Title="Инфо панель" Height="700" Width="850">
+    <Grid Background="#0d1221">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>            
+            <RowDefinition Height="auto"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>            
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>        
+        <ContentControl Grid.Row="0" Grid.Column="1" HorizontalAlignment="Center" Content="{Binding UserControlSource}"/>
+        <StackPanel Grid.Row="1" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Center">
+            <Button Style="{StaticResource IntroButton}" Content="Инфо" Command="{Binding UpdateViewCommand}" CommandParameter="intro"></Button>
+            <Button Style="{StaticResource GoodGameButton}" Content="GG" Command="{Binding UpdateViewCommand}" CommandParameter="ggintro"></Button>
+            <Button Style="{StaticResource TwitchButton}" Content="Twitch" Command="{Binding UpdateViewCommand}" CommandParameter="twintro"></Button>
+            <Button Style="{StaticResource YouTubeButton}" Content="YouTube" Command="{Binding UpdateViewCommand}" CommandParameter="ytintro"></Button>
+        </StackPanel>
+    </Grid>
+</Window>
