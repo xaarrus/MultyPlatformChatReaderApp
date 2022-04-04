@@ -34,7 +34,8 @@ namespace MultyPlatformChatReaderApp.ViewModels
             TWLogOut = new AsyncCommand(async () => await TWLogOutApp());
             TwAvatar = new AsyncCommand(async()=> 
             {
-                if (string.IsNullOrEmpty(_storeService.SettingApp.SettingsTw.TwitchUserLogIn.access_token))
+                if (string.IsNullOrEmpty(_storeService.SettingApp.SettingsTw.TwitchUserLogIn.access_token)
+                | _storeService.SettingApp.SettingsTw.TwitchUserLogIn.CheckNeedUpdateTokenTwitch())
                 {
                     await _twapiService.CheckTwToken();                    
                 }
@@ -62,8 +63,9 @@ namespace MultyPlatformChatReaderApp.ViewModels
             OnPropertyChanged(nameof(TwCountViewer));            
         }
         public async Task CheckTwStatusLogin()
-        {
-            while(string.IsNullOrEmpty(_storeService.SettingApp.SettingsTw.TwitchUserLogIn.access_token))
+        {            
+            while(string.IsNullOrEmpty(_storeService.SettingApp.SettingsTw.TwitchUserLogIn.access_token)
+                | _storeService.SettingApp.SettingsTw.TwitchUserLogIn.CheckNeedUpdateTokenTwitch())
             {
                 await Task.Delay(8000);
             }
@@ -75,7 +77,8 @@ namespace MultyPlatformChatReaderApp.ViewModels
         }
         public async Task GetTwStatusStream()
         {            
-            while (!string.IsNullOrEmpty(_storeService.SettingApp.SettingsTw.TwitchUserLogIn.access_token))
+            while (!string.IsNullOrEmpty(_storeService.SettingApp.SettingsTw.TwitchUserLogIn.access_token)
+                & !_storeService.SettingApp.SettingsTw.TwitchUserLogIn.CheckNeedUpdateTokenTwitch())
             {
                 TwitchUserLocalInfo temp = await _twapiService.TwStatusStream();
                 TwAvatarUrl = temp.AvatarLink;

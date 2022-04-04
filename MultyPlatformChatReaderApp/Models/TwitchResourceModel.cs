@@ -17,7 +17,9 @@ namespace MultyPlatformChatReaderApp.Models
                 "channel:manage:redemptions", "channel:manage:videos", "channel:read:editors", "channel:read:hype_train", "channel:read:redemptions", "channel:read:stream_key",
                 "channel:read:subscriptions", "clips:edit", "moderation:read", "user:edit", "user:edit:follows", "user:read:blocked_users",
                 "user:manage:blocked_users", "user:read:broadcast", "user:read:email",
-                "channel_subscriptions","channel_commercial","channel_editor","user_follows_edit","channel_read","user_read","user_blocks_read","user_blocks_edit",
+                "channel:read:subscriptions","channel:edit:commercial","channel:manage:broadcast","channel:manage:videos","user:edit:follows",
+                "channel:read:editors","channel:read:stream_key","user:read:email",
+                "user:read:email","user:read:blocked_users","user:manage:blocked_users","user:read:subscriptions",
                 "channel:moderate","chat:edit","chat:read", "whispers:read","whispers:edit"    
         };
     }
@@ -29,6 +31,20 @@ namespace MultyPlatformChatReaderApp.Models
         public List<string> scope { get; set; }
         public string token_type { get; set; }
         public DateTime Issued { get; set; }
+        public bool CheckNeedUpdateTokenTwitch()
+        {
+            DateTime thisTime = DateTime.Now;
+            int day, hours, min, sec;
+            day = (thisTime - Issued).Days;
+            hours = (thisTime - Issued).Hours;
+            min = (thisTime - Issued).Minutes;
+            sec = (thisTime - Issued).Seconds;
+            int resultSeconds = sec + (min * 60) + (hours * 60 * 60) + (day * 24 * 60 * 60);
+            if (resultSeconds > 14400)
+                return true;// need update token
+            else
+                return false;
+        }
     }
     public class TwitchUserLocalInfo
     {

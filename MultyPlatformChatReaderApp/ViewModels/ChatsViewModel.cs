@@ -187,7 +187,8 @@ namespace MultyPlatformChatReaderApp.ViewModels
                 }
                 await StartTwClient();
             }
-            TempInfo = await _twapiService.TwStatusStream();            
+            TempInfo = await _twapiService.TwStatusStream();
+
             if (!_twapiService.TwitchClientListen.IsConnected)
             {
                 _twapiService.TwitchClientListen.OnConnected += Twitch_OnConnected;
@@ -232,10 +233,40 @@ namespace MultyPlatformChatReaderApp.ViewModels
                 _twapiService.TwitchClientListen.TimeoutUser(e.ChatMessage.Channel, e.ChatMessage.Username, TimeSpan.FromMinutes(30), "Bad word! 30 minute timeout!");
             else
             {
-                string se = (e.ChatMessage.DisplayName + ": " + e.ChatMessage.Message + "\n");
+                var ListTwitchMessageEnd = new List<ChatMessage.MessageWordsAndSmiles>();
+                var SortListEmotesByStartIndex = e.ChatMessage.EmoteSet.Emotes.OrderBy(x => x.StartIndex).ToList();                
+                
+                if (SortListEmotesByStartIndex.Count > 0)
+                {
+                    int tempIndex = 0;
+                    for (int i = 0; i <= SortListEmotesByStartIndex.Count - 1; i++)
+                    {
+                        var MessageWordAndSmile = new ChatMessage.MessageWordsAndSmiles();
+                        string partStringNoSmile = "";
+                        partStringNoSmile = e.ChatMessage.Message.Substring(tempIndex, (SortListEmotesByStartIndex[i].StartIndex - tempIndex));
+                        tempIndex = SortListEmotesByStartIndex[i].StartIndex + SortListEmotesByStartIndex[i].Name.Length;
+                        MessageWordAndSmile.MessageWord = partStringNoSmile;
+                        MessageWordAndSmile.SmileUrl = SortListEmotesByStartIndex[i].ImageUrl;
+                        ListTwitchMessageEnd.Add(MessageWordAndSmile);                        
+                    }
+                    if (e.ChatMessage.Message.Length > tempIndex)
+                    {
+                        var MessageWordAndSmile = new ChatMessage.MessageWordsAndSmiles();
+                        MessageWordAndSmile.MessageWord = e.ChatMessage.Message.Substring(tempIndex, (e.ChatMessage.Message.Length - tempIndex));
+                        MessageWordAndSmile.SmileUrl = "pack://application:,,,/Data/img/pixel-clear.png";
+                        ListTwitchMessageEnd.Add(MessageWordAndSmile);
+                    }
+                }
+                else
+                {
+                    var MessageWordAndSmile = new ChatMessage.MessageWordsAndSmiles();
+                    MessageWordAndSmile.MessageWord = e.ChatMessage.Message;
+                    MessageWordAndSmile.SmileUrl = "pack://application:,,,/Data/img/pixel-clear.png";
+                    ListTwitchMessageEnd.Add(MessageWordAndSmile);
+                }
                 if (Chat != null)
                 {
-                    AddMessageInChat(FromService.Twitch, e.ChatMessage.DisplayName, e.ChatMessage.Message);
+                    AddMessageInChat(FromService.Twitch, e.ChatMessage.DisplayName, ListTwitchMessageEnd);
                 }
             }
         }
@@ -252,7 +283,20 @@ namespace MultyPlatformChatReaderApp.ViewModels
             {
                 FromServiceName = serviceName,
                 FromUserName = fromUserName,
-                MessageContext = userMessage
+                ListWordsAndSmiles = new List<ChatMessage.MessageWordsAndSmiles> {
+                    new ChatMessage.MessageWordsAndSmiles { MessageWord = userMessage, SmileUrl = "pack://application:,,,/Data/img/pixel-clear.png" } 
+                }
+            };
+            App.Current.Dispatcher.Invoke(() => Chat.Add(mes));
+            OnPropertyChanged(nameof(Chat));
+        }
+        public async Task AddMessageInChat(FromService serviceName, string fromUserName, List<ChatMessage.MessageWordsAndSmiles> messageWAS)
+        {
+            var mes = new AllChatMessage.ChatMessage
+            {
+                FromServiceName = serviceName,
+                FromUserName = fromUserName,
+                ListWordsAndSmiles = messageWAS
             };
             App.Current.Dispatcher.Invoke(() => Chat.Add(mes));
             OnPropertyChanged(nameof(Chat));

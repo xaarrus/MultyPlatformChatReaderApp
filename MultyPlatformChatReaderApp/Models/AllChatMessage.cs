@@ -20,7 +20,10 @@ namespace MultyPlatformChatReaderApp.Models
             public FromService FromServiceName { get; set; }
             public string FromUserName { get; set; }
             public string UriImg { get { return VoidUriImg(FromServiceName); } set { } }
-            public string MessageContext { get; set; }
+            public string? MessageContext { get; set; }
+            public List<string>? SmileUrls { get; set; }
+            public List<string>? MessageWords { get; set; }
+            public List<MessageWordsAndSmiles>? ListWordsAndSmiles { get; set; }
             public string VoidUriImg(FromService serviceName)
             {
                 switch (serviceName)
@@ -34,8 +37,13 @@ namespace MultyPlatformChatReaderApp.Models
                     case FromService.sys:
                         return "/Data/img/sysi.png";
                     default:
-                        return "/Data/img/sysi.png";                       
-                }               
+                        return "/Data/img/sysi.png";
+                }
+            }
+            public class MessageWordsAndSmiles
+            {
+                public string? MessageWord { get; set; }
+                public string? SmileUrl { get; set; }
             }
         }
     }

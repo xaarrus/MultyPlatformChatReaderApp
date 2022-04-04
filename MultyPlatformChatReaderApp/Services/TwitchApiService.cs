@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -12,6 +13,7 @@ using System.Windows.Media;
 using TwitchLib.Api;
 using TwitchLib.Api.Core.Enums;
 using TwitchLib.Api.Helix.Models.Search;
+using TwitchLib.Api.Helix.Models.Users.GetUsers;
 using TwitchLib.Api.Services;
 using TwitchLib.Client;
 using TwitchLib.Client.Models;
@@ -41,7 +43,7 @@ namespace MultyPlatformChatReaderApp.Services
         }
         public async Task StartTwApi()
         {
-            if(!string.IsNullOrEmpty(Twuser.access_token) & !CheckNeedUpdateTokenTwitch())
+            if(!string.IsNullOrEmpty(Twuser.access_token) & !Twuser.CheckNeedUpdateTokenTwitch())
             {
                 TwitchAPISevice = new TwitchAPI() { Settings = {
                         AccessToken = Twuser.access_token, 
@@ -70,15 +72,21 @@ namespace MultyPlatformChatReaderApp.Services
         {
             Twuser = _storeService.SettingApp.SettingsTw.TwitchUserLogIn;
             if (string.IsNullOrEmpty(Twuser.access_token)) { await GetTwToken(); }
-            if (CheckNeedUpdateTokenTwitch()) { await RefreshTwToken(); }
+            if (Twuser.CheckNeedUpdateTokenTwitch()) { await RefreshTwToken(); }
             await StartTwApi();
         }
         public async Task<TwitchUserLocalInfo> TwStatusStream()
         {
             TempInfo = new TwitchUserLocalInfo();
             if (Twuser.access_token != null)
-            {
-                var responseTwUserAuthed = await TwitchAPISevice.V5.Users.GetUserAsync(Twuser.access_token);
+            {                
+                var responseTwUserAuthedList = await TwitchAPISevice.Helix.Users.GetUsersAsync(accessToken:Twuser.access_token);
+                User responseTwUserAuthed = new User();
+                if (responseTwUserAuthedList.Users.Count() > 0)
+                {
+                    responseTwUserAuthed = responseTwUserAuthedList.Users.FirstOrDefault();
+                }
+                
                 if (responseTwUserAuthed != null)
                 {
                     SearchChannelsResponse searchChannels = await TwitchAPISevice.Helix.Search.SearchChannelsAsync(responseTwUserAuthed.DisplayName);
@@ -92,25 +100,25 @@ namespace MultyPlatformChatReaderApp.Services
                                 {  TempInfo.StreamStatus = new SolidColorBrush(Colors.Green); }
                                 else
                                 {  TempInfo.StreamStatus = new SolidColorBrush(Colors.Red); }
-                                TempInfo.AvatarLink = responseTwUserAuthed.Logo;
+                                TempInfo.AvatarLink = responseTwUserAuthed.ProfileImageUrl;
                                 TempInfo.NameOnTw = responseTwUserAuthed.DisplayName;
-                                TempInfo.TwitchName = responseTwUserAuthed.Name;
+                                TempInfo.TwitchName = responseTwUserAuthed.Login;
                             }
                         }
                     }
                 }
                 if (responseTwUserAuthed?.Id != null)
-                {
-                    var TwChannelInfo = await TwitchAPISevice.V5.Channels.GetChannelByIDAsync(channelId: responseTwUserAuthed.Id);
-                    if (TwChannelInfo != null)
+                {                    
+                    var TwChannelInfo = await TwitchAPISevice.Helix.Channels.GetChannelInformationAsync(broadcasterId: responseTwUserAuthed.Id);
+                    if (TwChannelInfo.Data.Count() > 0)
                     {
-                        TempInfo.GameName = TwChannelInfo.Game;
-                        TempInfo.StreamTitle = TwChannelInfo.Status;
+                        TempInfo.GameName = TwChannelInfo.Data.FirstOrDefault().GameName;                        
+                        TempInfo.StreamTitle = TwChannelInfo.Data.FirstOrDefault().Title;
                     }
-                    var TwOnlineCount = await TwitchAPISevice.V5.Streams.GetStreamByUserAsync(channelId: responseTwUserAuthed.Id, streamType: "all");
-                    if (TwOnlineCount.Stream != null)
+                    var TwOnlineCount = await TwitchAPISevice.Helix.Streams.GetStreamsAsync(userIds: new List<string> { responseTwUserAuthed.Id }, type: "all");
+                    if (TwOnlineCount.Streams.Count() > 0)
                     {
-                        TempInfo.CountViewers = TwOnlineCount.Stream.Viewers;
+                        TempInfo.CountViewers = TwOnlineCount.Streams.FirstOrDefault(x=>x.UserId == responseTwUserAuthed.Id).ViewerCount;
                     }
                 }
             }
@@ -213,20 +221,6 @@ namespace MultyPlatformChatReaderApp.Services
                     }
                 }
             }
-        }
-        public bool CheckNeedUpdateTokenTwitch()
-        {
-            DateTime thisTime = DateTime.Now;
-            int day, hours, min, sec;
-            day = (thisTime - Twuser.Issued).Days;
-            hours = (thisTime - Twuser.Issued).Hours;
-            min = (thisTime - Twuser.Issued).Minutes;
-            sec = (thisTime - Twuser.Issued).Seconds;
-            int resultSeconds = sec + (min * 60) + (hours * 60 * 60) + (day * 24 * 60 * 60);
-            if (resultSeconds > 14400)
-                return true;// need update token
-            else
-                return false;
         }
     }
 }
