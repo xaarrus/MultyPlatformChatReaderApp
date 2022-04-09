@@ -2,7 +2,7 @@
 The application work with api services and get message from chat and track information about you broadcast.
 
 ## Sample work with:
-[![GoodGame](https://xaarrus.github.io/Blog/img/ico/igg.png)](https://goodgame.ru/) [![Twitch](https://xaarrus.github.io/Blog/img/ico/itw.png)](https://twitch.tv/) [![YouTube](https://xaarrus.github.io/Blog/img/ico/iyt.png)](https://youtube.com/)
+[![GoodGame](https://xaarrus.github.io/Blog/img/ico/igg.png)](https://goodgame.ru/) [![Twitch](https://xaarrus.github.io/Blog/img/ico/itw.png)](https://twitch.tv/) [![YouTube](https://xaarrus.github.io/Blog/img/ico/iyt.png)](https://youtube.com/) [![Trovo](https://cdn.discordapp.com/attachments/354939174165544961/962381856345583696/i-trovo.png)](https://trovo.live)
 
 ## Features
 * Check status stream
@@ -12,11 +12,11 @@ The application work with api services and get message from chat and track infor
 * This time only RUS localization
 
 
-| Service | GoodGame | Twitch | YouTube |
-|-|-|-|-|
-| Get message | :white_check_mark: | :white_check_mark: | :white_check_mark: |
-| Follow | :black_square_button: | :white_check_mark: |:black_square_button: |
-| Sub | :black_square_button: | :white_check_mark:|:black_square_button: |
+| Service | GoodGame | Twitch | YouTube | Trovo |
+|-|-|-|-|-|
+| Get message | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
+| Follow | :black_square_button: | :white_check_mark: |:black_square_button: | :black_square_button: |
+| Sub | :black_square_button: | :white_check_mark:|:black_square_button: | :black_square_button: |
 
 ## In progress
 - [ ] Change Title broadcast
@@ -29,12 +29,13 @@ The application work with api services and get message from chat and track infor
 
 ## Settings before build
 1. Open Models/TwitchResourceModel enter you clientID, clientSecret and authorizationEndpointLocal
-2. Open Services/YouTubeAppService enter you clientID, clientSecret
+2. Open Models/TrovoResourceModel enter you clientID, clientSecret and authorizationEndpointLocal
+3. Open Services/YouTubeAppService enter you clientID, clientSecret
 
 ## Start use
 For LogIn click on the question mark.
 
-![](https://cdn.discordapp.com/attachments/354939174165544961/930841255439642714/unknown.png)
+![](https://cdn.discordapp.com/attachments/354939174165544961/962382981551497267/unknown.png)
 
 ## NuGet
 * [Microsoft.Extensions.DependencyInjection](https://dot.net)
