@@ -86,7 +86,7 @@ namespace MultyPlatformChatReaderApp.ViewModels
             }
             _GGLoginWindow.Close();
         }
-        public async Task CheckGGStatusLogin() 
+        public async Task CheckGGStatusLogin()
         {
             while (string.IsNullOrEmpty(_storeService.SettingApp.SettingsGG.LogInUser.user.username))
             {

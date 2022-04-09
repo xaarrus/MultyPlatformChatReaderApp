@@ -45,7 +45,8 @@
                 <Button Grid.Column="1" Grid.Row="0" Margin="20 5" Style="{StaticResource ChachREbutton}" Command="{Binding ConnectToChatGG}" Content="Re GoodGame" ToolTip="Переподключается к чату GoodGame."></Button>
                 <Button Grid.Column="2" Grid.Row="0" Margin="20 5" Style="{StaticResource ChachREbutton}" Command="{Binding ConnectToChatYT}" Content="Re Youtube" ToolTip="Переподключается к чату Youtube."></Button>
                 <Button Grid.Column="1" Grid.Row="1" Margin="20 5 20 0" Style="{StaticResource ChachClearbutton}" Command="{Binding ClearChat}" Content="Очистить чат" ToolTip="Очищает список всех ПОЛУЧЕННЫХ ПРИЛОЖЕНИЕМ сообщений."></Button>
-                <Button Grid.Column="0" Grid.Row="1" Margin="20 5 20 0" Style="{StaticResource ChachWindowbutton}" Command="{Binding ChachCommand}" Content="Чат в окне" ToolTip="Откроет чат в окне со всеми полученными ранее сообщениями."></Button>                
+                <Button Grid.Column="0" Grid.Row="1" Margin="20 5 20 0" Style="{StaticResource ChachWindowbutton}" Command="{Binding ChachCommand}" Content="Чат в окне" ToolTip="Откроет чат в окне со всеми полученными ранее сообщениями."></Button>
+                <Button Grid.Column="2" Grid.Row="1" Margin="20 5" Style="{StaticResource ChachREbutton}" Command="{Binding ConnectToChatTR}" Content="Re Trovo" ToolTip="Переподключается к чату Trovo."></Button>
             </Grid>
         </StackPanel>
     </Grid>

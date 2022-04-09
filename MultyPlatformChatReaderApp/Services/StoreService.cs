@@ -52,6 +52,16 @@ namespace MultyPlatformChatReaderApp.Services
             }
             LoadSettings();
         }
+        public void SaveSettings(TrovoUser settingToSave)
+        {
+            SettingApp.SettingsTr.TrovoUserLogIn = settingToSave;
+            using (StreamWriter streamWriter = File.CreateText(settingFileName))
+            {
+                string settingInJson = JsonConvert.SerializeObject(SettingApp);
+                streamWriter.Write(settingInJson);
+            }
+            LoadSettings();
+        }
         public void LoadSettings()
         {
             if (!File.Exists(settingFileName))

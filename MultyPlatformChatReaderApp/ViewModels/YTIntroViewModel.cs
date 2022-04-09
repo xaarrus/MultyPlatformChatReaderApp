@@ -1,6 +1,7 @@
 ﻿using Google.Apis.YouTube.v3.Data;
 using MultyPlatformChatReaderApp.Commands;
 using MultyPlatformChatReaderApp.Services;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
@@ -22,12 +23,19 @@ namespace MultyPlatformChatReaderApp.ViewModels
         private YouTubeAppService _ytService;
         public ICommand YtAvatar { get; set; }
         public ICommand YTLogOut { get; set; }
+        public ICommand YTEditStream { get; set; }
         public YTIntroViewModel(YouTubeAppService ytService)
         {
             _ytService = ytService;
             _ = Checkyt();
 
             YTLogOut = new AsyncCommand(async () => await YTLogOutApp());
+            YTEditStream = new AsyncCommand(async () => {
+                if (!string.IsNullOrEmpty(YtStreamId))
+                {
+                    Process.Start("explorer", "https://studio.youtube.com/video/"+ YtStreamId + "/livestreaming");
+                }                
+            });
             YtAvatar = new AsyncCommand(async () =>
             {
                 if (_ytService.credential == null)

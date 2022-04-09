@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Net.Http;
 using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
@@ -21,6 +22,8 @@ using TwitchLib.Client.Extensions;
 using TwitchLib.Communication.Events;
 using static MultyPlatformChatReaderApp.Models.AllChatMessage;
 using static MultyPlatformChatReaderApp.Models.GGWSCommand;
+using static MultyPlatformChatReaderApp.Models.PortalGGModel;
+using static MultyPlatformChatReaderApp.Models.TrovoChatMessagesModel;
 
 namespace MultyPlatformChatReaderApp.ViewModels
 {
@@ -29,6 +32,7 @@ namespace MultyPlatformChatReaderApp.ViewModels
         private TwitchApiService _twapiService;
         private StoreService _storeService;
         private YouTubeAppService _ytService;
+        public TrovoApiService _trapiService;
 
         private static ChatsWindow CW;
 
@@ -38,17 +42,23 @@ namespace MultyPlatformChatReaderApp.ViewModels
         public TwitchUserLocalInfo TempInfo = new TwitchUserLocalInfo();
 
         public ClientWebSocket GGwebSocket;
+        public ClientWebSocket TrovowebSocket;
+
+        public List<GGSmilesLibrary> AllSmilesGoodGame = new List<GGSmilesLibrary>();
+        public TrovoEmotes AllSmilesTrovo = new TrovoEmotes();
         public ICommand ConnectToChatTW { get; set; }
         public ICommand ConnectToChatGG { get; set; }
         public ICommand ConnectToChatYT { get; set; }
+        public ICommand ConnectToChatTR { get; set; }
         public ICommand ClearChat { get; set; }
         public ICommand ChachCommand { get; set; }
         public ObservableCollection<AllChatMessage.ChatMessage> Chat { get; set; } = new ObservableCollection<AllChatMessage.ChatMessage>();
-        public ChatsViewModel(TwitchApiService twapiService, StoreService storeService, YouTubeAppService ytService)
+        public ChatsViewModel(TwitchApiService twapiService, StoreService storeService, YouTubeAppService ytService, TrovoApiService trapiService)
         {
             _twapiService = twapiService;
             _storeService = storeService;
             _ytService = ytService;
+            _trapiService = trapiService;
 
             ConnectToChatTW = new AsyncCommand(async () =>
             {
@@ -60,12 +70,17 @@ namespace MultyPlatformChatReaderApp.ViewModels
             );
             ConnectToChatGG = new AsyncCommand(async () => await StartGGClient());
             ConnectToChatYT = new AsyncCommand(async () => await ListenYTChat());
+            ConnectToChatTR = new AsyncCommand(async () => await StartTrovoClient());
             ClearChat = new AsyncCommand(async () => await ClearChatMessages());
             ChachCommand = new AsyncCommand(async () => ChachWindow());
+            
+            _ = GetGGSmiles();
+            _ = GetTrovoSmiles();
 
-            _ = StartTwClient();
-            _ = StartGGClient();
+            _ = StartTwClient();            
+            _ = StartGGClient();            
             _ = StartYTListen();
+            _ = StartTrovoClient();
         }
         private async Task StartYTListen()
         {
@@ -138,6 +153,115 @@ namespace MultyPlatformChatReaderApp.ViewModels
             else
             { CW.Show(); }
         }
+        public async Task StartTrovoClient()
+        {
+            if (TrovowebSocket != null)
+            {
+                if (TrovowebSocket.State == WebSocketState.Open)
+                {
+                    await TrovowebSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
+                    TrovowebSocket.Dispose();
+                    AddMessageInChat(FromService.sys, "sys", "Отключился от Trovo.");
+                }
+            }
+            if(!string.IsNullOrEmpty(_storeService.SettingApp.SettingsTr.TrovoUserLogIn.access_token) & !_storeService.SettingApp.SettingsTr.TrovoUserLogIn.CheckNeedUpdateTokenTrovo())
+            {
+                TrovoChatToken _trovoChatToken = new TrovoChatToken();
+                while (_trovoChatToken.token == null)
+                {
+                    _trovoChatToken = await _trapiService.GetChatToken();
+                    await Task.Delay(500);
+                }
+                TrovoMessage StoreTrovoMessage = new TrovoMessage();
+
+
+                using (TrovowebSocket = new ClientWebSocket() {  Options = { KeepAliveInterval = TimeSpan.FromSeconds(30)}})
+                {
+                    await TrovowebSocket.ConnectAsync(new Uri("wss://open-chat.trovo.live/chat"), CancellationToken.None);
+                    string commandAuth = "{\"type\":\"AUTH\",\"nonce\":\"Hi\",\"data\":{\"token\":\""+ _trovoChatToken.token + "\"}}";
+                    ArraySegment<byte> bytesToSend = new ArraySegment<byte>(Encoding.UTF8.GetBytes(commandAuth));
+                    await TrovowebSocket.SendAsync(bytesToSend, WebSocketMessageType.Text, true, CancellationToken.None);
+                    if (TrovowebSocket.State == WebSocketState.Open)
+                    {
+                        AddMessageInChat(FromService.sys, "sys", "Подключился к Trovo.");
+                    }
+                    while (TrovowebSocket.State == WebSocketState.Open)
+                    {
+                        ArraySegment<byte> bytesReceivedFromTrovows = new ArraySegment<byte>(new byte[40960]);
+                        WebSocketReceiveResult resultTrovo = await TrovowebSocket.ReceiveAsync(bytesReceivedFromTrovows, CancellationToken.None);
+                        string responseFromWSTrovo = Encoding.UTF8.GetString(bytesReceivedFromTrovows.Array, 0, resultTrovo.Count);
+                        TrovoMessage responseMessage = JsonConvert.DeserializeObject<TrovoMessage>(responseFromWSTrovo);
+                        if (responseMessage.type == "CHAT")
+                        {
+                            for (int i = 0; i < responseMessage.data.chats.Count(); i++)
+                            {
+                                if (AllSmilesTrovo != null)
+                                {
+                                    string[] _arTrovoMessage = responseMessage.data.chats[i].content.Split(' ', ':');
+                                    var ListTrovoMessageEnd = new List<ChatMessage.MessageWordsAndSmiles>();
+                                    for (int z = 0; z < _arTrovoMessage.Count(); z++)
+                                    {
+                                        var MessageSmileTrovo = new ChatMessage.MessageWordsAndSmiles();
+                                        Emote smileTrovoCustom = new Emote();
+                                        if (AllSmilesTrovo.channels.customizedEmotes != null)
+                                        {
+                                            var smileTrovoCustomChannel = AllSmilesTrovo.channels.customizedEmotes.channel.FirstOrDefault(x => x.emotes.FirstOrDefault(e => e.name == _arTrovoMessage[z]) != null);
+                                            smileTrovoCustom = smileTrovoCustomChannel.emotes.FirstOrDefault(x=>x.name == _arTrovoMessage[z]);
+                                        }                                        
+                                        var smileTrovoEvent = AllSmilesTrovo.channels.eventEmotes.FirstOrDefault(x => x.name == _arTrovoMessage[z]);
+                                        var smileTrovoGlobal = AllSmilesTrovo.channels.globalEmotes.FirstOrDefault(x => x.name == _arTrovoMessage[z]);
+                                        if (smileTrovoCustom.url != null | smileTrovoEvent != null | smileTrovoGlobal != null)
+                                        {
+                                            if (smileTrovoCustom.url != null)
+                                            {
+                                                MessageSmileTrovo.SmileUrl = smileTrovoCustom.url;
+                                                ListTrovoMessageEnd.Add(MessageSmileTrovo);
+                                            }
+                                            if (smileTrovoEvent != null)
+                                            {
+                                                MessageSmileTrovo.SmileUrl = smileTrovoEvent.url;
+                                                ListTrovoMessageEnd.Add(MessageSmileTrovo);
+                                            }
+                                            if (smileTrovoGlobal != null)
+                                            {
+                                                MessageSmileTrovo.SmileUrl = smileTrovoGlobal.url;
+                                                ListTrovoMessageEnd.Add(MessageSmileTrovo);
+                                            }
+                                        }
+                                        else
+                                        {
+                                            var MessageWordTrovoBadSmile = new ChatMessage.MessageWordsAndSmiles();
+                                            if (_arTrovoMessage[z].Length > 0)
+                                            {
+                                                MessageWordTrovoBadSmile.MessageWord = _arTrovoMessage[z] + " ";
+                                                ListTrovoMessageEnd.Add(MessageWordTrovoBadSmile);
+                                            }
+                                        }
+                                    }
+                                    AddMessageInChat(FromService.Trovo, responseMessage.data.chats[i].nick_name, ListTrovoMessageEnd);
+                                }
+                                else
+                                {
+                                    AddMessageInChat(FromService.Trovo, responseMessage.data.chats[i].nick_name, responseMessage.data.chats[i].content);
+                                }
+                            }                               
+                        }
+                        else
+                        {
+                            //see all response wss Trovo
+                            //AddMessageInChat(FromService.Trovo, "Trovo", responseFromWSTrovo);
+                        }
+                    }
+                    await TrovowebSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
+                    TrovowebSocket.Dispose();
+                    AddMessageInChat(FromService.sys, "sys", "Отключился от Trovo.");
+                }
+            }
+        }
+        public async Task GetTrovoSmiles()
+        {
+            AllSmilesTrovo = await _trapiService.GetEmotes();
+        }
         public async Task StartGGClient()
         {
             if (_storeService.SettingApp.SettingsGG.LogInUser.success & _storeService.SettingApp.SettingsGG.LogInUser.user.channelInfo.idi > 0)
@@ -160,7 +284,37 @@ namespace MultyPlatformChatReaderApp.ViewModels
                         GetMessageResponse responseMessage = JsonConvert.DeserializeObject<GetMessageResponse>(responseFromWS);
                         if (responseMessage.data.text != null & responseMessage.data.user_name != null)
                         {
-                            AddMessageInChat(FromService.GoodGame, responseMessage.data.user_name, responseMessage.data.text);
+                            if (AllSmilesGoodGame.Count > 0)
+                            {
+                                var ListGGMessageEnd = new List<ChatMessage.MessageWordsAndSmiles>();
+                                string[] arMessageGGWord = responseMessage.data.text.Split(' ', ':');
+
+                                for (int z = 0; z < arMessageGGWord.Count(); z++)
+                                {
+                                    var MessageWordGG = new ChatMessage.MessageWordsAndSmiles();
+                                    var MessageSmileGG = new ChatMessage.MessageWordsAndSmiles();
+                                    GGSmilesLibrary smileGG = AllSmilesGoodGame.FirstOrDefault(x => x.key == arMessageGGWord[z]);
+                                    if (smileGG != null && smileGG.images.big != null)
+                                    {
+                                        MessageSmileGG.SmileUrl = smileGG.images.big;
+                                        ListGGMessageEnd.Add(MessageSmileGG);
+                                    }
+                                    else
+                                    {
+                                        var MessageWordGGBadSmile = new ChatMessage.MessageWordsAndSmiles();
+                                        if (arMessageGGWord[z].Length > 0)
+                                        {
+                                            MessageWordGGBadSmile.MessageWord = arMessageGGWord[z] + " " ;
+                                            ListGGMessageEnd.Add(MessageWordGGBadSmile);
+                                        }                                        
+                                    }
+                                }
+                                AddMessageInChat(FromService.GoodGame, responseMessage.data.user_name, ListGGMessageEnd);
+                            }
+                            else
+                            { 
+                                AddMessageInChat(FromService.GoodGame, responseMessage.data.user_name, responseMessage.data.text); 
+                            }
                         }
                     }
                     GGwebSocket.Dispose();
@@ -169,26 +323,36 @@ namespace MultyPlatformChatReaderApp.ViewModels
             }
             await CheckGGLogIn();
         }
+        public async Task GetGGSmiles() 
+        {
+            HttpClient http = new HttpClient();
+            string getUrl = "https://goodgame.ru/api/4/smiles";
+            var response = await http.GetAsync(getUrl);
+            string result = await response.Content.ReadAsStringAsync();
+            if (response.IsSuccessStatusCode)
+            {
+                AllSmilesGoodGame = JsonConvert.DeserializeObject<List<GGSmilesLibrary>>(result);                
+            }
+        }
         public async Task CheckGGLogIn()
         {
             while (!_storeService.SettingApp.SettingsGG.LogInUser.success)
             {
-                await Task.Delay(5000);
+                await Task.Delay(500);
             }
             await StartGGClient();
         }
         public async Task StartTwClient()
         {
-            if (string.IsNullOrEmpty(_storeService.SettingApp.SettingsTw.TwitchUserLogIn.access_token))
+            if (string.IsNullOrEmpty(_storeService.SettingApp.SettingsTw.TwitchUserLogIn.access_token) || _storeService.SettingApp.SettingsTw.TwitchUserLogIn.CheckNeedUpdateTokenTwitch())
             {
-                while (string.IsNullOrEmpty(_storeService.SettingApp.SettingsTw.TwitchUserLogIn.access_token))
+                while (string.IsNullOrEmpty(_storeService.SettingApp.SettingsTw.TwitchUserLogIn.access_token) || _storeService.SettingApp.SettingsTw.TwitchUserLogIn.CheckNeedUpdateTokenTwitch())
                 {
-                    await Task.Delay(3000);
+                    await Task.Delay(1000);
                 }
                 await StartTwClient();
             }
             TempInfo = await _twapiService.TwStatusStream();
-
             if (!_twapiService.TwitchClientListen.IsConnected)
             {
                 _twapiService.TwitchClientListen.OnConnected += Twitch_OnConnected;
@@ -198,7 +362,7 @@ namespace MultyPlatformChatReaderApp.ViewModels
                 _twapiService.TwitchClientListen.OnReSubscriber += Twitch_OnReSubscriber;
                 _twapiService.TwitchClientListen.Connect();
                 await StartTwFollow();
-            }
+            }            
         }
         public async Task StartTwFollow()
         {
@@ -241,28 +405,28 @@ namespace MultyPlatformChatReaderApp.ViewModels
                     int tempIndex = 0;
                     for (int i = 0; i <= SortListEmotesByStartIndex.Count - 1; i++)
                     {
-                        var MessageWordAndSmile = new ChatMessage.MessageWordsAndSmiles();
+                        var MessageWord = new ChatMessage.MessageWordsAndSmiles();
+                        var MessageSmile = new ChatMessage.MessageWordsAndSmiles();
                         string partStringNoSmile = "";
                         partStringNoSmile = e.ChatMessage.Message.Substring(tempIndex, (SortListEmotesByStartIndex[i].StartIndex - tempIndex));
                         tempIndex = SortListEmotesByStartIndex[i].StartIndex + SortListEmotesByStartIndex[i].Name.Length;
-                        MessageWordAndSmile.MessageWord = partStringNoSmile;
-                        MessageWordAndSmile.SmileUrl = SortListEmotesByStartIndex[i].ImageUrl;
-                        ListTwitchMessageEnd.Add(MessageWordAndSmile);                        
+                        MessageWord.MessageWord = partStringNoSmile;
+                        MessageSmile.SmileUrl = SortListEmotesByStartIndex[i].ImageUrl;
+                        ListTwitchMessageEnd.Add(MessageWord);
+                        ListTwitchMessageEnd.Add(MessageSmile);
                     }
                     if (e.ChatMessage.Message.Length > tempIndex)
                     {
-                        var MessageWordAndSmile = new ChatMessage.MessageWordsAndSmiles();
-                        MessageWordAndSmile.MessageWord = e.ChatMessage.Message.Substring(tempIndex, (e.ChatMessage.Message.Length - tempIndex));
-                        MessageWordAndSmile.SmileUrl = "pack://application:,,,/Data/img/pixel-clear.png";
-                        ListTwitchMessageEnd.Add(MessageWordAndSmile);
+                        var MessageWordOther = new ChatMessage.MessageWordsAndSmiles();
+                        MessageWordOther.MessageWord = e.ChatMessage.Message.Substring(tempIndex, (e.ChatMessage.Message.Length - tempIndex));                        
+                        ListTwitchMessageEnd.Add(MessageWordOther);
                     }
                 }
                 else
                 {
-                    var MessageWordAndSmile = new ChatMessage.MessageWordsAndSmiles();
-                    MessageWordAndSmile.MessageWord = e.ChatMessage.Message;
-                    MessageWordAndSmile.SmileUrl = "pack://application:,,,/Data/img/pixel-clear.png";
-                    ListTwitchMessageEnd.Add(MessageWordAndSmile);
+                    var MessageWordOnly = new ChatMessage.MessageWordsAndSmiles();
+                    MessageWordOnly.MessageWord = e.ChatMessage.Message;
+                    ListTwitchMessageEnd.Add(MessageWordOnly);
                 }
                 if (Chat != null)
                 {
@@ -284,7 +448,7 @@ namespace MultyPlatformChatReaderApp.ViewModels
                 FromServiceName = serviceName,
                 FromUserName = fromUserName,
                 ListWordsAndSmiles = new List<ChatMessage.MessageWordsAndSmiles> {
-                    new ChatMessage.MessageWordsAndSmiles { MessageWord = userMessage, SmileUrl = "pack://application:,,,/Data/img/pixel-clear.png" } 
+                    new ChatMessage.MessageWordsAndSmiles { MessageWord = userMessage } 
                 }
             };
             App.Current.Dispatcher.Invoke(() => Chat.Add(mes));

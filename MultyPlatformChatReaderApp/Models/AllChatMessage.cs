@@ -13,6 +13,7 @@ namespace MultyPlatformChatReaderApp.Models
             Twitch = 1,
             YouTube = 2,
             GoodGame = 3,
+            Trovo = 4,
             sys = 99
         }
         public class ChatMessage
@@ -34,6 +35,8 @@ namespace MultyPlatformChatReaderApp.Models
                         return "/Data/img/yti.png";
                     case FromService.GoodGame:
                         return "/Data/img/ggi.png";
+                    case FromService.Trovo:
+                        return "/Data/img/tri.png";
                     case FromService.sys:
                         return "/Data/img/sysi.png";
                     default:
@@ -42,8 +45,8 @@ namespace MultyPlatformChatReaderApp.Models
             }
             public class MessageWordsAndSmiles
             {
-                public string? MessageWord { get; set; }
-                public string? SmileUrl { get; set; }
+                public string MessageWord { get; set; } = "";
+                public string SmileUrl { get; set; } = "pack://application:,,,/Data/img/pixel-clear.png";
             }
         }
     }

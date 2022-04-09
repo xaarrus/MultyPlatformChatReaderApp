@@ -5,6 +5,7 @@ namespace MultyPlatformChatReaderApp.ViewModels
 {
     public class IntroViewModel : BaseViewModel
     {
+        public TRIntroView TRIntro { get; set; } = new TRIntroView();
         public TWIntroView TWIntro { get; set; } = new TWIntroView();
         public UserControl GGIntro { get; set; } = new GGIntroView();
         public UserControl YTIntro { get; set; } = new YTIntroView();

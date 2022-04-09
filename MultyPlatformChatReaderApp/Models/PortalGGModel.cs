@@ -107,5 +107,27 @@ namespace MultyPlatformChatReaderApp.Models
             public string title { get; set; } = "";
             public string url { get; set; }
         }
+        public class GGSmilesLibrary
+        {
+            public string id { get; set; }
+            public string key { get; set; }
+            public int level { get; set; }
+            public string paid { get; set; }
+            public string bind { get; set; }
+            public int internal_id { get; set; }
+            public int channel_id { get; set; }
+            public object channel { get; set; }
+            public string nickname { get; set; }
+            public int donat { get; set; }
+            public int premium { get; set; }
+            public int animated { get; set; }
+            public Images images { get; set; }
+        }
+        public class Images
+        {
+            public string small { get; set; }
+            public string big { get; set; }
+            public string gif { get; set; }
+        }
     }
 }

@@ -11,7 +11,8 @@
         <Grid.RowDefinitions>
             <RowDefinition/>
             <RowDefinition/>
-            <RowDefinition/>            
+            <RowDefinition/>
+            <RowDefinition/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>            
             <ColumnDefinition Width="*"/>
@@ -37,7 +38,13 @@
         </StackPanel>
         </ScrollViewer>
 
-        <StackPanel Grid.RowSpan="3" Grid.Column="2" HorizontalAlignment="Center">            
+        <ScrollViewer Grid.Row="3" Grid.Column="0" VerticalScrollBarVisibility="Auto">
+            <StackPanel HorizontalAlignment="Center" Margin="0 5" Background="ForestGreen">
+                <ContentControl Content="{Binding TRIntro}"></ContentControl>
+            </StackPanel>
+        </ScrollViewer>
+
+        <StackPanel Grid.RowSpan="4" Grid.Column="2" HorizontalAlignment="Center">            
             <ContentControl Content="{Binding ChatAll}"></ContentControl>
         </StackPanel>
         

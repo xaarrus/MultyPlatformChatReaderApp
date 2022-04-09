@@ -35,7 +35,9 @@ namespace MultyPlatformChatReaderApp.Services
         public TwitchApiService(StoreService storeService)
         {
             _storeService = storeService;
-            if (!string.IsNullOrEmpty(_storeService.SettingApp.SettingsTw.TwitchUserLogIn.access_token))
+
+            if (!string.IsNullOrEmpty(_storeService.SettingApp.SettingsTw.TwitchUserLogIn.access_token)
+                || !_storeService.SettingApp.SettingsTw.TwitchUserLogIn.CheckNeedUpdateTokenTwitch())
             {
                 Twuser = _storeService.SettingApp.SettingsTw.TwitchUserLogIn;
                 StartTwApi();
@@ -62,6 +64,13 @@ namespace MultyPlatformChatReaderApp.Services
                 WebSocketClient customClient = new WebSocketClient(clientOptions);
                 TwitchClientListen = new TwitchClient(customClient);
                 TwitchClientListen.Initialize(credentials, TempInfo.TwitchName);
+                do
+                {
+                    await Task.Delay(5000);
+                }
+                while (!string.IsNullOrEmpty(_storeService.SettingApp.SettingsTw.TwitchUserLogIn.access_token)
+                    || !_storeService.SettingApp.SettingsTw.TwitchUserLogIn.CheckNeedUpdateTokenTwitch());
+                await CheckTwToken();
             }
             else
             {               
