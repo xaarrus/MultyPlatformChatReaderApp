@@ -10,12 +10,6 @@
         
         <ResourceDictionary>
             
-        <DataTemplate DataType="{x:Type viewmodels:GGLoginViewModel}">
-            <views:GGLoginView/>
-        </DataTemplate>
-        <DataTemplate DataType="{x:Type viewmodels:LoginViewModel}">
-            <views:LoginView/>
-        </DataTemplate>
         <DataTemplate DataType="{x:Type viewmodels:YTIntroViewModel}">
             <views:YTIntroView/>
         </DataTemplate>

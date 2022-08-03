@@ -1,4 +1,5 @@
 ﻿using MultyPlatformChatReaderApp.Commands;
+using MultyPlatformChatReaderApp.Interface;
 using MultyPlatformChatReaderApp.Services;
 using MultyPlatformChatReaderApp.Views;
 using Newtonsoft.Json;
@@ -33,12 +34,14 @@ namespace MultyPlatformChatReaderApp.ViewModels
         public Visibility logOutButton { get { return _logOutButton; } set { _logOutButton = value; OnPropertyChanged(nameof(logOutButton)); } }
 
         private readonly StoreService _storeService;
+        private readonly GoodGameService _ggService;
         private static GGLoginWindow _GGLoginWindow;
         public ICommand GGAvatar { get; set; }
         public ICommand GGLogOut { get; set; }
-        public GGIntroViewModel(StoreService storeService)
+        public GGIntroViewModel(StoreService storeService, IGoodGameService ggService)
         {
             _storeService = storeService;
+            _ggService = (GoodGameService)ggService;
             
             _ = CheckGGStatusLogin();
             GGLogOut = new AsyncCommand(async () => await GGLogOutApp());
@@ -70,6 +73,7 @@ namespace MultyPlatformChatReaderApp.ViewModels
             OnPropertyChanged(nameof(GGStreamTitle));
             OnPropertyChanged(nameof(GGUserStatusBrush));
             OnPropertyChanged(nameof(GGCountViewer));
+            await _ggService.Connect();
             await CheckGGStatusLogin();
         }
         private async Task GGLoginWindowOpen()

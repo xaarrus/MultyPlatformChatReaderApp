@@ -91,6 +91,7 @@ namespace MultyPlatformChatReaderApp.Services
         }
         public async Task RefreshTrovoToken() 
         {
+            TrovoUser tempTruser = new TrovoUser();
             HttpClient http = new HttpClient();
             http.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             http.DefaultRequestHeaders.Add("client-id", TrResource.clientID_tr);
@@ -103,12 +104,15 @@ namespace MultyPlatformChatReaderApp.Services
             if (response.IsSuccessStatusCode)
             {
                 string result = await response.Content.ReadAsStringAsync();
-                TrovoUser tempTruser = new TrovoUser();
                 tempTruser = JsonConvert.DeserializeObject<TrovoUser>(result);
                 Truser.access_token = tempTruser.access_token;
                 Truser.refresh_token = tempTruser.refresh_token;
                 Truser.Issued = DateTime.Now;
                 _storeService.SaveSettings(Truser);
+            }
+            else
+            {
+                _storeService.SaveSettings(tempTruser);
             }
         }
         public async Task CheckTrToken() 

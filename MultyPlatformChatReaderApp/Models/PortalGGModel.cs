@@ -129,5 +129,9 @@ namespace MultyPlatformChatReaderApp.Models
             public string big { get; set; }
             public string gif { get; set; }
         }
+        public class BaseReceive
+        {
+            public string type { get; set; } = "";
+        }
     }
 }

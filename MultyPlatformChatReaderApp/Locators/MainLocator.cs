@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using MultyPlatformChatReaderApp.Interface;
 using MultyPlatformChatReaderApp.Services;
 using MultyPlatformChatReaderApp.ViewModels;
 
@@ -18,8 +19,7 @@ namespace MultyPlatformChatReaderApp.Locators
             services.AddScoped<TWIntroViewModel>();            
             services.AddScoped<TRIntroViewModel>();            
             services.AddScoped<YTIntroViewModel>();            
-            services.AddScoped<GGIntroViewModel>();            
-            services.AddScoped<LoginViewModel>();            
+            services.AddScoped<GGIntroViewModel>();
             services.AddScoped<MainViewModel>();
 
             services.AddSingleton<UserControlService>();            
@@ -27,6 +27,7 @@ namespace MultyPlatformChatReaderApp.Locators
             services.AddSingleton<TwitchApiService>();
             services.AddSingleton<TrovoApiService>();
             services.AddSingleton<YouTubeAppService>();
+            services.AddSingleton<IGoodGameService, GoodGameService>();
 
             _provider = services.BuildServiceProvider();
 
@@ -42,7 +43,6 @@ namespace MultyPlatformChatReaderApp.Locators
         public TWIntroViewModel TWIntroViewModel => _provider.GetRequiredService<TWIntroViewModel>();
         public TRIntroViewModel TRIntroViewModel => _provider.GetRequiredService<TRIntroViewModel>();
         public GGIntroViewModel GGIntroViewModel => _provider.GetRequiredService<GGIntroViewModel>();
-        public LoginViewModel LoginViewModel => _provider.GetRequiredService<LoginViewModel>();
         public ChatsViewModel ChatsViewModel => _provider.GetRequiredService<ChatsViewModel>();
     }
 }

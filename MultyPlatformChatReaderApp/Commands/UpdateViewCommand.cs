@@ -45,11 +45,7 @@ namespace MultyPlatformChatReaderApp.Commands
             if (parameter?.ToString() == "ytintro")
             {
                 _viewModel.UserControlSource = new YTIntroView();
-            }
-            if (parameter?.ToString() == "login")
-            {
-                _viewModel.UserControlSource = new LoginView();
-            }
+            }            
             if (parameter?.ToString() == "gglogin")
             {
                 if (!string.IsNullOrEmpty(_storeService.SettingApp.SettingsGG.LogInUser.user.nickname))
@@ -59,8 +55,6 @@ namespace MultyPlatformChatReaderApp.Commands
                         _viewModel.UserControlSource = new IntroView();
                     }                    
                 }
-                else
-                    _viewModel.UserControlSource = new GGLoginView();
             }
         }
     }

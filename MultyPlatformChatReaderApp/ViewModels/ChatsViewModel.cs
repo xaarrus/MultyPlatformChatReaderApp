@@ -1,5 +1,6 @@
 ﻿using Google.Apis.YouTube.v3.Data;
 using MultyPlatformChatReaderApp.Commands;
+using MultyPlatformChatReaderApp.Interface;
 using MultyPlatformChatReaderApp.Models;
 using MultyPlatformChatReaderApp.Services;
 using MultyPlatformChatReaderApp.Views;
@@ -33,6 +34,7 @@ namespace MultyPlatformChatReaderApp.ViewModels
         private StoreService _storeService;
         private YouTubeAppService _ytService;
         public TrovoApiService _trapiService;
+        public GoodGameService _ggService;
 
         private static ChatsWindow CW;
 
@@ -41,7 +43,6 @@ namespace MultyPlatformChatReaderApp.ViewModels
         
         public TwitchUserLocalInfo TempInfo = new TwitchUserLocalInfo();
 
-        public ClientWebSocket GGwebSocket;
         public ClientWebSocket TrovowebSocket;
 
         public List<GGSmilesLibrary> AllSmilesGoodGame = new List<GGSmilesLibrary>();
@@ -53,13 +54,15 @@ namespace MultyPlatformChatReaderApp.ViewModels
         public ICommand ClearChat { get; set; }
         public ICommand ChachCommand { get; set; }
         public ObservableCollection<AllChatMessage.ChatMessage> Chat { get; set; } = new ObservableCollection<AllChatMessage.ChatMessage>();
-        public ChatsViewModel(TwitchApiService twapiService, StoreService storeService, YouTubeAppService ytService, TrovoApiService trapiService)
+        public ChatsViewModel(TwitchApiService twapiService, IGoodGameService ggService, StoreService storeService, YouTubeAppService ytService, TrovoApiService trapiService)
         {
             _twapiService = twapiService;
             _storeService = storeService;
             _ytService = ytService;
             _trapiService = trapiService;
+            _ggService = (GoodGameService)ggService;
 
+            _ggService.OnMessageReceive += AddMessageInChat;
             ConnectToChatTW = new AsyncCommand(async () =>
             {
                 if (!_twapiService.TwitchClientListen.IsConnected)
@@ -68,17 +71,14 @@ namespace MultyPlatformChatReaderApp.ViewModels
                 }                 
             }
             );
-            ConnectToChatGG = new AsyncCommand(async () => await StartGGClient());
+            ConnectToChatGG = new AsyncCommand(async () => await _ggService.Connect());
             ConnectToChatYT = new AsyncCommand(async () => await ListenYTChat());
             ConnectToChatTR = new AsyncCommand(async () => await StartTrovoClient());
             ClearChat = new AsyncCommand(async () => await ClearChatMessages());
             ChachCommand = new AsyncCommand(async () => ChachWindow());
-            
-            _ = GetGGSmiles();
-            _ = GetTrovoSmiles();
 
-            _ = StartTwClient();            
-            _ = StartGGClient();            
+            _ = GetTrovoSmiles();
+            _ = StartTwClient();
             _ = StartYTListen();
             _ = StartTrovoClient();
         }
@@ -262,86 +262,7 @@ namespace MultyPlatformChatReaderApp.ViewModels
         {
             AllSmilesTrovo = await _trapiService.GetEmotes();
         }
-        public async Task StartGGClient()
-        {
-            if (_storeService.SettingApp.SettingsGG.LogInUser.success & _storeService.SettingApp.SettingsGG.LogInUser.user.channelInfo.idi > 0)
-            {
-                using (GGwebSocket = new ClientWebSocket())
-                {
-                    await GGwebSocket.ConnectAsync(new Uri("wss://chat.goodgame.ru/chat/websocket"), CancellationToken.None);
-                    string commandJoinGGOnId = JsonConvert.SerializeObject(new JoinChatCommand() { data = { channel_id = _storeService.SettingApp.SettingsGG.LogInUser.user.channelInfo.idi } });
-                    ArraySegment<byte> bytesToSend = new ArraySegment<byte>(Encoding.UTF8.GetBytes(commandJoinGGOnId));
-                    await GGwebSocket.SendAsync(bytesToSend, WebSocketMessageType.Text, true, CancellationToken.None);
-                    if (GGwebSocket.State == WebSocketState.Open)
-                    {
-                        AddMessageInChat(FromService.sys, "sys", "Подключился к GoodGame.");
-                    }
-                    while (GGwebSocket.State == WebSocketState.Open && _storeService.SettingApp.SettingsGG.LogInUser.user.channelInfo.idi > 0)
-                    {
-                        ArraySegment<byte> bytesReceived = new ArraySegment<byte>(new byte[40960]);
-                        WebSocketReceiveResult result = await GGwebSocket.ReceiveAsync(bytesReceived, CancellationToken.None);
-                        string responseFromWS = Encoding.UTF8.GetString(bytesReceived.Array, 0, result.Count);
-                        GetMessageResponse responseMessage = JsonConvert.DeserializeObject<GetMessageResponse>(responseFromWS);
-                        if (responseMessage.data.text != null & responseMessage.data.user_name != null)
-                        {
-                            if (AllSmilesGoodGame.Count > 0)
-                            {
-                                var ListGGMessageEnd = new List<ChatMessage.MessageWordsAndSmiles>();
-                                string[] arMessageGGWord = responseMessage.data.text.Split(' ', ':');
-
-                                for (int z = 0; z < arMessageGGWord.Count(); z++)
-                                {
-                                    var MessageWordGG = new ChatMessage.MessageWordsAndSmiles();
-                                    var MessageSmileGG = new ChatMessage.MessageWordsAndSmiles();
-                                    GGSmilesLibrary smileGG = AllSmilesGoodGame.FirstOrDefault(x => x.key == arMessageGGWord[z]);
-                                    if (smileGG != null && smileGG.images.big != null)
-                                    {
-                                        MessageSmileGG.SmileUrl = smileGG.images.big;
-                                        ListGGMessageEnd.Add(MessageSmileGG);
-                                    }
-                                    else
-                                    {
-                                        var MessageWordGGBadSmile = new ChatMessage.MessageWordsAndSmiles();
-                                        if (arMessageGGWord[z].Length > 0)
-                                        {
-                                            MessageWordGGBadSmile.MessageWord = arMessageGGWord[z] + " " ;
-                                            ListGGMessageEnd.Add(MessageWordGGBadSmile);
-                                        }                                        
-                                    }
-                                }
-                                AddMessageInChat(FromService.GoodGame, responseMessage.data.user_name, ListGGMessageEnd);
-                            }
-                            else
-                            { 
-                                AddMessageInChat(FromService.GoodGame, responseMessage.data.user_name, responseMessage.data.text); 
-                            }
-                        }
-                    }
-                    GGwebSocket.Dispose();
-                    AddMessageInChat(FromService.sys, "sys", "Отключился от GoodGame.");
-                }
-            }
-            await CheckGGLogIn();
-        }
-        public async Task GetGGSmiles() 
-        {
-            HttpClient http = new HttpClient();
-            string getUrl = "https://goodgame.ru/api/4/smiles";
-            var response = await http.GetAsync(getUrl);
-            string result = await response.Content.ReadAsStringAsync();
-            if (response.IsSuccessStatusCode)
-            {
-                AllSmilesGoodGame = JsonConvert.DeserializeObject<List<GGSmilesLibrary>>(result);                
-            }
-        }
-        public async Task CheckGGLogIn()
-        {
-            while (!_storeService.SettingApp.SettingsGG.LogInUser.success)
-            {
-                await Task.Delay(500);
-            }
-            await StartGGClient();
-        }
+        
         public async Task StartTwClient()
         {
             if (string.IsNullOrEmpty(_storeService.SettingApp.SettingsTw.TwitchUserLogIn.access_token) || _storeService.SettingApp.SettingsTw.TwitchUserLogIn.CheckNeedUpdateTokenTwitch())
@@ -454,7 +375,7 @@ namespace MultyPlatformChatReaderApp.ViewModels
             App.Current.Dispatcher.Invoke(() => Chat.Add(mes));
             OnPropertyChanged(nameof(Chat));
         }
-        public async Task AddMessageInChat(FromService serviceName, string fromUserName, List<ChatMessage.MessageWordsAndSmiles> messageWAS)
+        public async void AddMessageInChat(FromService serviceName, string fromUserName, List<ChatMessage.MessageWordsAndSmiles> messageWAS)
         {
             var mes = new AllChatMessage.ChatMessage
             {

@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:MultyPlatformChatReaderApp.Views"
         mc:Ignorable="d"
         DataContext="{Binding GGLoginViewModel, Source={StaticResource MainLocator}}"
-        Title="Вход в GG" Height="235" Width="250">
+        Title="Вход в GG" Height="220" Width="250">
     <Grid Background="#233056" Height="200" Width="250">
         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
             <Label Foreground="White" HorizontalAlignment="Center">Имя пользователя / Login</Label>
@@ -16,7 +16,6 @@
             <Button Style="{StaticResource GoodGameButton}" Margin="0 10 0 0" Command="{Binding LoginGG}">
                 <TextBlock TextWrapping="Wrap" HorizontalAlignment="Center" Text="Войти LogIn"></TextBlock>
             </Button>
-            <Label Content="{Binding ResponseError, UpdateSourceTrigger=PropertyChanged}"></Label>
         </StackPanel>
     </Grid>
 </Window>
