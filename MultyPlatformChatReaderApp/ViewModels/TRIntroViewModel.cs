@@ -14,6 +14,7 @@ namespace MultyPlatformChatReaderApp.ViewModels
         public TrovoApiService _trapiService;
         public StoreService _storeService;
         private TrovoUserLocalInfo TrLocalInfo = new TrovoUserLocalInfo();
+        public TrovoUserInfo tempInfo = new();
 
         public string TrAvatarUrl { get { return TrLocalInfo.AvatarLink; } set { TrLocalInfo.AvatarLink = value; OnPropertyChanged(nameof(TrAvatarUrl)); } }
         public string TrName { get { return TrLocalInfo.NameOnTr; } set { TrLocalInfo.NameOnTr = value; OnPropertyChanged(nameof(TrName)); } }
@@ -31,66 +32,64 @@ namespace MultyPlatformChatReaderApp.ViewModels
             _storeService = storeService;
 
             _ = CheckTrStatusLogin();
-
+            _ = _trapiService.CheckTrToken();
             TRLogOut = new AsyncCommand(async () => await TRLogOutApp());
-            TrAvatar = new AsyncCommand(async () =>
-            {
-                while (string.IsNullOrEmpty(_storeService.SettingApp.SettingsTr.TrovoUserLogIn.access_token)
-                | _storeService.SettingApp.SettingsTr.TrovoUserLogIn.CheckNeedUpdateTokenTrovo())
+            TrAvatar = new AsyncCommand(async () => {
+                if (string.IsNullOrEmpty(_storeService.SettingApp.SettingsTr.TrovoUserLogIn.access_token))
                 {
                     await _trapiService.CheckTrToken();
-                    await Task.Delay(1000);
+                }
+                if (_storeService.SettingApp.SettingsTr.TrovoUserLogIn.CheckNeedUpdateTokenTrovo())
+                {
+                    await _trapiService.CheckTrToken();
+                }
+                if (logOutButton == Visibility.Hidden)
+                {
+                    logOutButton = Visibility.Visible;
                 }
                 await GetTrStatusStream();
             });
         }
         public async Task CheckTrStatusLogin() 
         {
-            while (string.IsNullOrEmpty(_storeService.SettingApp.SettingsTr.TrovoUserLogIn.access_token)
-                | _storeService.SettingApp.SettingsTr.TrovoUserLogIn.CheckNeedUpdateTokenTrovo())
+            while (string.IsNullOrEmpty(_storeService.SettingApp.SettingsTr.TrovoUserLogIn.access_token))
             {
                 await Task.Delay(1000);
-            }
-            if (logOutButton == Visibility.Hidden)
-            {
-                logOutButton = Visibility.Visible;
             }
             await GetTrStatusStream();
         }
         public async Task GetTrStatusStream() 
         {
-            if (!string.IsNullOrEmpty(_storeService.SettingApp.SettingsTr.TrovoUserLogIn.access_token)
-                | !_storeService.SettingApp.SettingsTr.TrovoUserLogIn.CheckNeedUpdateTokenTrovo())
+            while (!string.IsNullOrEmpty(_storeService.SettingApp.SettingsTr.TrovoUserLogIn.access_token) && !_storeService.SettingApp.SettingsTr.TrovoUserLogIn.CheckNeedUpdateTokenTrovo())
             {
-                TrovoUserInfo tempInfo = await _trapiService.GetTrovoUserInfo();
+                if (logOutButton == Visibility.Hidden)
+                {
+                    logOutButton = Visibility.Visible;
+                }
+                tempInfo = await _trapiService.GetTrovoUserInfo();
                 if (tempInfo != null)
                 {
                     TrAvatarUrl = tempInfo.profilePic;
                     TrName = tempInfo.userName;
-                    while (!string.IsNullOrEmpty(_storeService.SettingApp.SettingsTr.TrovoUserLogIn.access_token) | !_storeService.SettingApp.SettingsTr.TrovoUserLogIn.CheckNeedUpdateTokenTrovo())
-                    {
                         TrovoChannelInfo NewTrovoChannelInfo = await _trapiService.GetTrovoChannelInfo(channel_id: Int32.Parse(tempInfo.channelId));
                         TrGameName = NewTrovoChannelInfo.category_name;
                         TrStreamTitle = NewTrovoChannelInfo.live_title;
                         TrCountViewer = NewTrovoChannelInfo.current_viewers;
                         if (NewTrovoChannelInfo.is_live == true)
-                        {
-                            TrUserStatusBrush = new SolidColorBrush(Colors.Green);
-                        }  
+                        { TrUserStatusBrush = new SolidColorBrush(Colors.Green); }
                         if (NewTrovoChannelInfo.is_live == false)
-                        {
-                            TrUserStatusBrush = new SolidColorBrush(Colors.Red);
-                        }
-                        await Task.Delay(8000);
-                    }
+                        { TrUserStatusBrush = new SolidColorBrush(Colors.Red); }
                 }
+                await Task.Delay(1000);
             }
-            await CheckTrStatusLogin();
+            TrLocalInfo = new TrovoUserLocalInfo();
         }
         public async Task TRLogOutApp() 
         {
             TrovoUser clearTruser = new TrovoUser();
+            tempInfo = new();
             _storeService.SaveSettings(clearTruser);
+            _trapiService.Truser = clearTruser;
 
             if (logOutButton == Visibility.Visible)
             {
@@ -103,6 +102,8 @@ namespace MultyPlatformChatReaderApp.ViewModels
             OnPropertyChanged(nameof(TrStreamTitle));
             OnPropertyChanged(nameof(TrUserStatusBrush));
             OnPropertyChanged(nameof(TrCountViewer));
+            await _trapiService.Connect();
+            await CheckTrStatusLogin();
         }
     }
 }

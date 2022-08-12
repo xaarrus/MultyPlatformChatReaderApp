@@ -16,16 +16,16 @@ namespace MultyPlatformChatReaderApp.Models
             public class User
             {
                 public int id { get; set; }
-                public string username { get; set; }
-                public string nickname { get; set; }
-                public string avatar { get; set; }
-                public string token { get; set; }                
+                public string username { get; set; } = "";
+                public string nickname { get; set; } = "";
+                public string avatar { get; set; } = "";
+                public string token { get; set; } = "";
                 public Channel channelInfo { get; set; } = new Channel() { id ="0"};
                 public Settings settings { get; set; }
                 public int dialogs { get; set; }
                 public bool bl { get; set; }
                 public List<object> bl_data { get; set; }
-                public string rights { get; set; }
+                public string rights { get; set; } = "";
                 public bool premium { get; set; }                
                 public bool is_banned { get; set; }
                 public string jwt { get; set; }
@@ -40,13 +40,13 @@ namespace MultyPlatformChatReaderApp.Models
             }
             public class Channel
             {
-                public string id { get; set; }
+                public string id { get; set; } = "";
                 public int idi { get { int temp = 0; temp = Convert.ToInt32(id); return temp; } }
             }
             public class Settings
             {
-                public Chat chat { get; set; }
-                public Beta beta { get; set; }
+                public Chat chat { get; set; } = new();
+                public Beta beta { get; set; } = new();
             }
             public class Chat
             {
@@ -70,12 +70,12 @@ namespace MultyPlatformChatReaderApp.Models
         }
         public class UserLoginFormGGModel
         {
-            public string username { get; set; }
-            public string password { get; set; }
+            public string username { get; set; } = "";
+            public string password { get; set; } = "";
         }
         public class UserLoginFalse
         {            
-            public string error { get; set; }
+            public string error { get; set; } = "";
         }
         public class GGStreamInfoModel
         {
@@ -84,54 +84,50 @@ namespace MultyPlatformChatReaderApp.Models
         public class GGStream
         {
             public int id { get; set; }
-            public string title { get; set; }
-            public string link { get; set; }
-            public string streamer { get; set; }
-            public string avatar { get; set; }
-            public string hidden { get; set; }
+            public string title { get; set; } = "";
+            public string link { get; set; } = "";
+            public string streamer { get; set; } = "";
+            public string avatar { get; set; } = "";
+            public string hidden { get; set; } = "";
             public GGGame game { get; set; } = new GGGame();
             public int viewers { get; set; } = 0;
-            public string preview { get; set; }
-            public string poster { get; set; }
+            public string preview { get; set; } = "";
+            public string poster { get; set; } = "";
             public bool premium { get; set; }
-            public string streamkey { get; set; }
-            public string channelkey { get; set; }
+            public string streamkey { get; set; } = "";
+            public string channelkey { get; set; } = "";
             public bool status { get; set; }
             public object favorite { get; set; }            
         }
         public class GGGame
         {
-            public string id { get; set; }
-            public string poster { get; set; }
-            public string poster3d { get; set; }
+            public string id { get; set; } = "";
+            public string poster { get; set; } = "";
+            public string poster3d { get; set; } = "";
             public string title { get; set; } = "";
-            public string url { get; set; }
+            public string url { get; set; } = "";
         }
         public class GGSmilesLibrary
         {
-            public string id { get; set; }
-            public string key { get; set; }
+            public string id { get; set; } = "";
+            public string key { get; set; } = "";
             public int level { get; set; }
-            public string paid { get; set; }
-            public string bind { get; set; }
+            public string paid { get; set; } = "";
+            public string bind { get; set; } = "";
             public int internal_id { get; set; }
             public int channel_id { get; set; }
-            public object channel { get; set; }
-            public string nickname { get; set; }
+            public object channel { get; set; } = "";
+            public string nickname { get; set; } = "";
             public int donat { get; set; }
             public int premium { get; set; }
             public int animated { get; set; }
-            public Images images { get; set; }
+            public Images images { get; set; } = new();
         }
         public class Images
         {
-            public string small { get; set; }
-            public string big { get; set; }
-            public string gif { get; set; }
-        }
-        public class BaseReceive
-        {
-            public string type { get; set; } = "";
+            public string small { get; set; } = "";
+            public string big { get; set; } = "";
+            public string gif { get; set; } = "";
         }
     }
 }

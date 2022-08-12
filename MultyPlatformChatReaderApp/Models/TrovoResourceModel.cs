@@ -91,4 +91,24 @@ namespace MultyPlatformChatReaderApp.Models
         public string StreamTitle { get; set; } = "";
         public int CountViewers { get; set; } = 0;
     }
+    public class TrovoListSubscribers
+    {
+        public int total { get; set; }
+        public List<Subscription> subscriptions { get; set; } = new();
+        public class Subscription
+        {
+            public User user { get; set; } = new();
+            public int sub_created_at { get; set; }
+            public string sub_lv { get; set; } = "";
+            public string sub_tier { get; set; } = "";
+        }
+        public class User
+        {
+            public string user_id { get; set; } = "";
+            public string username { get; set; } = "";
+            public string display_name { get; set; } = "";
+            public string profile_pic { get; set; } = "";
+            public string created_at { get; set; } = "";
+        }
+    }
 }

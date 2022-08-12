@@ -81,10 +81,10 @@ namespace MultyPlatformChatReaderApp.Services
                 ArraySegment<byte> bytesReceived = new ArraySegment<byte>(new byte[91920]);
                 var result = await webSocket.ReceiveAsync(bytesReceived, CancellationToken.None);
                 string responseFromWS = Encoding.UTF8.GetString(bytesReceived.Array, 0, result.Count);
-
-                GetMessageResponse responseMessage = JsonConvert.DeserializeObject<GetMessageResponse>(responseFromWS);
-                if (responseMessage?.data.text != null & responseMessage?.data.user_name != null)
+                WSResponseType typeResponse = JsonConvert.DeserializeObject<WSResponseType>(responseFromWS);
+                if (typeResponse.type == "message")
                 {
+                    GetMessageResponse responseMessage = JsonConvert.DeserializeObject<GetMessageResponse>(responseFromWS);
                     if (AllSmilesGoodGame.Count > 0)
                     {
                         var ListGGMessageEnd = new List<ChatMessage.MessageWordsAndSmiles>();
@@ -119,6 +119,32 @@ namespace MultyPlatformChatReaderApp.Services
                                 new ChatMessage.MessageWordsAndSmiles() { MessageWord = responseMessage.data.text } 
                             });
                     }
+                }
+                if (typeResponse.type == "premium")
+                {
+                    GetPremiumSubscribeResponse newSubscriber = JsonConvert.DeserializeObject<GetPremiumSubscribeResponse>(responseFromWS);
+                    OnMessageReceive?.Invoke(FromService.GoodGame, newSubscriber.data.userName, new List<ChatMessage.MessageWordsAndSmiles>() {
+                                new ChatMessage.MessageWordsAndSmiles() { MessageWord = "Подписался на вас!" + 
+                                (newSubscriber.data.resub.Length > 0? (" Переподписан " + newSubscriber.data.resub + " месяц"):"") 
+                                }});
+                }
+                if (typeResponse.type == "payment")
+                {
+                    GetDonateResponse newDonate = JsonConvert.DeserializeObject<GetDonateResponse>(responseFromWS);
+                    string messageFromDonate = "";
+                    if (string.IsNullOrEmpty(newDonate.data.message))
+                    {
+                        messageFromDonate = "Пожертвовал: " + newDonate.data.amount;
+                    }
+                    else
+                    {
+                        messageFromDonate = "Пожертвовал: " + newDonate.data.amount + " и сообщает: " + newDonate.data.message;
+                    }
+                    OnMessageReceive?.Invoke(FromService.GoodGame, newDonate.data.userName, new List<ChatMessage.MessageWordsAndSmiles>() {
+                                new ChatMessage.MessageWordsAndSmiles() {                                     
+                                    MessageWord = messageFromDonate }
+
+                            });
                 }
             }
         }
