@@ -3,7 +3,6 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -34,7 +33,8 @@ namespace MultyPlatformChatReaderApp.Services
         {
             _storeService = storeService;
             Truser = _storeService.SettingApp.SettingsTr.TrovoUserLogIn;
-            GetTrovoSmiles();            
+            GetTrovoSmiles();
+            CheckListSubscriber();
         }
         public async Task Connect()
         {
@@ -63,8 +63,7 @@ namespace MultyPlatformChatReaderApp.Services
                     {
                         OnMessageReceive?.Invoke(FromService.sys, "sys", new List<ChatMessage.MessageWordsAndSmiles>() {
                                 new ChatMessage.MessageWordsAndSmiles() { MessageWord ="Подключился к Trovo."}
-                        });
-                        await CheckListSubscriber();
+                        });                        
                     }
                     while (ClientTrovo.State == WebSocketState.Open & !string.IsNullOrEmpty(_storeService.SettingApp.SettingsTr.TrovoUserLogIn.access_token))
                     {
@@ -308,7 +307,7 @@ namespace MultyPlatformChatReaderApp.Services
         {
             AllSmilesTrovo = await GetEmotes();
         }
-        public async Task CheckListSubscriber()
+        public async void CheckListSubscriber()
         {
             while (ClientTrovo.State == WebSocketState.Open)
             {

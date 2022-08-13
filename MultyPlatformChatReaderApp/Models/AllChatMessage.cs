@@ -10,6 +10,7 @@ namespace MultyPlatformChatReaderApp.Models
             YouTube = 2,
             GoodGame = 3,
             Trovo = 4,
+            WASD = 5,
             sys = 99
         }
         public class ChatMessage
@@ -25,6 +26,8 @@ namespace MultyPlatformChatReaderApp.Models
             {
                 switch (serviceName)
                 {
+                    case FromService.WASD:
+                        return "/Data/img/wasdi.png";
                     case FromService.Twitch:
                         return "/Data/img/twi.png";
                     case FromService.YouTube:

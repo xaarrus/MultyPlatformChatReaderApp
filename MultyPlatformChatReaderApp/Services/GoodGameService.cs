@@ -82,7 +82,7 @@ namespace MultyPlatformChatReaderApp.Services
                 var result = await webSocket.ReceiveAsync(bytesReceived, CancellationToken.None);
                 string responseFromWS = Encoding.UTF8.GetString(bytesReceived.Array, 0, result.Count);
                 WSResponseType typeResponse = JsonConvert.DeserializeObject<WSResponseType>(responseFromWS);
-                if (typeResponse.type == "message")
+                if (typeResponse?.type == "message")
                 {
                     GetMessageResponse responseMessage = JsonConvert.DeserializeObject<GetMessageResponse>(responseFromWS);
                     if (AllSmilesGoodGame.Count > 0)
@@ -120,7 +120,7 @@ namespace MultyPlatformChatReaderApp.Services
                             });
                     }
                 }
-                if (typeResponse.type == "premium")
+                if (typeResponse?.type == "premium")
                 {
                     GetPremiumSubscribeResponse newSubscriber = JsonConvert.DeserializeObject<GetPremiumSubscribeResponse>(responseFromWS);
                     OnMessageReceive?.Invoke(FromService.GoodGame, newSubscriber.data.userName, new List<ChatMessage.MessageWordsAndSmiles>() {
@@ -128,7 +128,7 @@ namespace MultyPlatformChatReaderApp.Services
                                 (newSubscriber.data.resub.Length > 0? (" Переподписан " + newSubscriber.data.resub + " месяц"):"") 
                                 }});
                 }
-                if (typeResponse.type == "payment")
+                if (typeResponse?.type == "payment")
                 {
                     GetDonateResponse newDonate = JsonConvert.DeserializeObject<GetDonateResponse>(responseFromWS);
                     string messageFromDonate = "";

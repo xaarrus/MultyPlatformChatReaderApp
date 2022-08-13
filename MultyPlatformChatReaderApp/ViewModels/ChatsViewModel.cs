@@ -28,6 +28,7 @@ namespace MultyPlatformChatReaderApp.ViewModels
         private YouTubeAppService _ytService;
         public TrovoApiService _trapiService;
         public GoodGameService _ggService;
+        public WASDService _wasdService;
 
         private static ChatsWindow CW;
 
@@ -44,22 +45,24 @@ namespace MultyPlatformChatReaderApp.ViewModels
         public ICommand ClearChat { get; set; }
         public ICommand ChachCommand { get; set; }
         public ObservableCollection<AllChatMessage.ChatMessage> Chat { get; set; } = new ObservableCollection<AllChatMessage.ChatMessage>();
-        public ChatsViewModel(TwitchApiService twapiService, IGoodGameService ggService, StoreService storeService, YouTubeAppService ytService, TrovoApiService trapiService)
+        public ChatsViewModel(TwitchApiService twapiService, IGoodGameService ggService, StoreService storeService, YouTubeAppService ytService, TrovoApiService trapiService, WASDService wasdService)
         {
             _twapiService = twapiService;
             _storeService = storeService;
             _ytService = ytService;
             _trapiService = trapiService;
             _ggService = (GoodGameService)ggService;
+            _wasdService = wasdService;
 
             _ggService.OnMessageReceive += AddMessageInChat;
             _trapiService.OnMessageReceive += AddMessageInChat;
+            _wasdService.OnMessageReceive += AddMessageInChat;
             ConnectToChatTW = new AsyncCommand(async () =>
             {
                 if (!_twapiService.TwitchClientListen.IsConnected)
                 {
                     await StartTwClient();
-                }                 
+                }
             }
             );
             ConnectToChatGG = new AsyncCommand(async () => await _ggService.Connect());
@@ -67,9 +70,10 @@ namespace MultyPlatformChatReaderApp.ViewModels
             ConnectToChatTR = new AsyncCommand(async () => await _trapiService.Connect());
             ClearChat = new AsyncCommand(async () => await ClearChatMessages());
             ChachCommand = new AsyncCommand(async () => ChachWindow());
-            
+
             _ = StartTwClient();
             _ = StartYTListen();
+            _wasdService = wasdService;
         }
         private async Task StartYTListen()
         {

@@ -20,6 +20,7 @@ namespace MultyPlatformChatReaderApp.Locators
             services.AddScoped<TRIntroViewModel>();            
             services.AddScoped<YTIntroViewModel>();            
             services.AddScoped<GGIntroViewModel>();
+            services.AddScoped<WASDIntroViewModel>();
             services.AddScoped<MainViewModel>();
 
             services.AddSingleton<UserControlService>();            
@@ -27,6 +28,7 @@ namespace MultyPlatformChatReaderApp.Locators
             services.AddSingleton<TwitchApiService>();
             services.AddSingleton<TrovoApiService>();
             services.AddSingleton<YouTubeAppService>();
+            services.AddSingleton<WASDService>();
             services.AddSingleton<IGoodGameService, GoodGameService>();
 
             _provider = services.BuildServiceProvider();
@@ -43,6 +45,7 @@ namespace MultyPlatformChatReaderApp.Locators
         public TWIntroViewModel TWIntroViewModel => _provider.GetRequiredService<TWIntroViewModel>();
         public TRIntroViewModel TRIntroViewModel => _provider.GetRequiredService<TRIntroViewModel>();
         public GGIntroViewModel GGIntroViewModel => _provider.GetRequiredService<GGIntroViewModel>();
+        public WASDIntroViewModel WASDIntroViewModel => _provider.GetRequiredService<WASDIntroViewModel>();
         public ChatsViewModel ChatsViewModel => _provider.GetRequiredService<ChatsViewModel>();
     }
 }

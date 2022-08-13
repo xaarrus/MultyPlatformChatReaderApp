@@ -13,6 +13,7 @@
     <None Remove="Data\img\sysi.png" />
     <None Remove="Data\img\tri.png" />
     <None Remove="Data\img\twi.png" />
+    <None Remove="Data\img\wasdi.png" />
     <None Remove="Data\img\yti.png" />
   </ItemGroup>
 
@@ -33,6 +34,7 @@
     <Resource Include="Data\img\sysi.png" />
     <Resource Include="Data\img\tri.png" />
     <Resource Include="Data\img\twi.png" />
+    <Resource Include="Data\img\wasdi.png" />
     <Resource Include="Data\img\yti.png" />
   </ItemGroup>
 

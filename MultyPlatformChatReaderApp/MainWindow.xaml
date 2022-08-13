@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:MultyPlatformChatReaderApp"
         mc:Ignorable="d"
         DataContext="{Binding MainViewModel, Source={StaticResource MainLocator}}"
-        Title="Инфо панель" Height="700" Width="850">
+        Title="Инфо панель" Height="800" Width="850">
     <Grid Background="#0d1221">
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>            
